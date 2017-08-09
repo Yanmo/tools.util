@@ -56,7 +56,7 @@ module WebAPI
                     raise "access token acquisition failure"
                 end
             rescue Timeout::Error
-                raise "connection error, and timeout error."
+                raise "do not connect and timeout error."
             rescue e
                 raise "fatal error."
             end
