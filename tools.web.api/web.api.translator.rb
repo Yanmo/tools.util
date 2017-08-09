@@ -1,4 +1,6 @@
+#! ruby -Ku
 # coding: utf-8
+
 #default library
 require 'yaml'
 require 'fileutils'
@@ -38,27 +40,27 @@ module WebAPI
             https = (@proxy == nil ? Net::HTTP.new(@token_uri.host, @token_uri.port) : Net::HTTP::Proxy(@proxy.host, @proxy.port, @proxy.user, @proxy.password).new(@token_uri.host, @token_uri.port))
             https.use_ssl = true
             https.verify_mode = OpenSSL::SSL::VERIFY_NONE
-            https.open_timeout = 3
-            https.read_timeout = 5
-            
-            req = Net::HTTP::Post.new(@token_uri.path)
-            req.add_field("Content-Length", 2048)
-            req.add_field("Content-Type", "application/json")
-            req.add_field("Accept", "application/jwt")
-            req.add_field("Ocp-Apim-Subscription-Key", @token_key)
+            https.open_timeout = 10
+            https.read_timeout = 10
 
-            begin 
-                res = https.request(req)
+            header = {
+                "Content-Length" => "2048",
+                "Content-Type" => "application/json",
+                "Accept" => "application/jwt",
+                "Ocp-Apim-Subscription-Key" => @token_key
+            }
+
+            begin
+                res = https.request_post(@token_uri.path, "", header)
                 if res.message == "OK"
                     @updateTime = Time.now
                     @token = res.body
                 else
                     raise "access token acquisition failure"
                 end
-            rescue Timeout::Error
+            rescue Timeout::Error, Exception => e
+                p e.message
                 raise "do not connect and timeout error."
-            rescue e
-                raise "fatal error."
             end
         end
 
@@ -74,20 +76,19 @@ module WebAPI
             https.read_timeout = 5
             params = { :text => word, :from => src, :to => dest }
             query_string = params.map{ |k,v| URI.encode(k.to_s) + "=" + URI.encode(v.to_s) }.join("&")
-            req = Net::HTTP::Get.new(uri.path + "?" + query_string)
+            req = Net::HTTP::Get.new(@api_uri.path + "?" + query_string)
             req['Authorization'] = "Bearer #{token}"
 
-            begin 
+            begin
                 res = https.request(req)
                 if res.message == "OK"
                     translated = Nokogiri::XML.parse(res.body).root.content
                     setTransCache(word, translated)
                 end
                 return translated
-            rescue Timeout::Error
-                raise "connection and timeout error."
-            rescue e
-                raise "fatal error."
+            rescue Timeout::Error, Exception => e
+                p e.message
+                raise "do not connect and timeout error."
             end
         end
 
