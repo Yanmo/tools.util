@@ -27,10 +27,11 @@ module WebAPI
     class MSTranslator
         def initialize(args = {})
             @cache = {}
-            @token_uri = URI.parse(args[:token_uri]) if args[:token_uri] != nil
-            @api_uri = URI.parse(args[:api_uri]) if args[:api_uri] != nil
-            @proxy = URI.parse(args[:proxy]) if args[:proxy] != nil
+            @token_uri = URI.parse(args[:token_uri])
+            @api_uri = URI.parse(args[:api_uri])
+            @proxy = URI.parse(args[:proxy])
             @token_key = args[:key]
+            @timeout = args[:timeout].to_i
         end
 
         def getAccessToken()
@@ -40,8 +41,8 @@ module WebAPI
             https = (@proxy == nil ? Net::HTTP.new(@token_uri.host, @token_uri.port) : Net::HTTP::Proxy(@proxy.host, @proxy.port, @proxy.user, @proxy.password).new(@token_uri.host, @token_uri.port))
             https.use_ssl = true
             https.verify_mode = OpenSSL::SSL::VERIFY_NONE
-            https.open_timeout = 10
-            https.read_timeout = 10
+            https.open_timeout = @timeout
+            https.read_timeout = @timeout
 
             header = {
                 "Content-Length" => "2048",
@@ -72,8 +73,8 @@ module WebAPI
 
             Net::HTTP.version_1_2
             https = (@proxy == nil ? Net::HTTP.new(@api_uri.host, @api_uri.port) : Net::HTTP::Proxy(@proxy.host, @proxy.port, @proxy.user, @proxy.password).new(@api_uri.host, @api_uri.port))
-            https.open_timeout = 3
-            https.read_timeout = 5
+            https.open_timeout = @timeout
+            https.read_timeout = @timeout
             params = { :text => word, :from => src, :to => dest }
             query_string = params.map{ |k,v| URI.encode(k.to_s) + "=" + URI.encode(v.to_s) }.join("&")
             req = Net::HTTP::Get.new(@api_uri.path + "?" + query_string)
@@ -102,6 +103,10 @@ module WebAPI
 
         def getTransCache(word)
             @cache[word]
+        end
+
+        def clearTransCache()
+            @cache.clear
         end
 
     end
