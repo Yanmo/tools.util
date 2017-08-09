@@ -7,5 +7,5 @@
     # dest: ["ja", "tc", "sc"],
     dest: ["ja"],
     token_uri: "https://api.cognitive.microsoft.com/sts/v1.0/issueToken",
-    api_uri: "http://api.microsofttranslator.com/V2/Http.svc/Translate",
+    api_uri: "http://api.microsofttranslator.com/V2/Http.svc/Translate"
 }
