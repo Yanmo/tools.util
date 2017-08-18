@@ -4,7 +4,7 @@
 # Create on 2013/04/15 10:12 By Yasuhiro.Y
 {
     src: en,
-    dest: ["ja", "zh-CHS", "ko"],
+    dest: ["fa", "ar", "he"],
     token_uri: "https://api.cognitive.microsoft.com/sts/v1.0/issueToken",
     api_uri: "http://api.microsofttranslator.com/V2/Http.svc/Translate"
 }
